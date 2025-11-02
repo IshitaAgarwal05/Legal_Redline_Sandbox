@@ -13,15 +13,6 @@ function getAuthHeaders() {
 }
 
 async function apiCall(url, options = {}) {
-  const token = localStorage.getItem('accessToken');
-
-  const headers = {
-    ...options.headers,
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   const response = await fetch(`${API_BASE}${url}`, {
     ...options,
     headers: {
@@ -85,7 +76,7 @@ export async function verifyToken() {
 export async function logout() {
   const token = getAuthToken()
   if (!token) return
-  
+
   try {
     await fetch(`${AUTH_API_BASE}/auth/logout`, {
       method: 'POST',
@@ -96,11 +87,38 @@ export async function logout() {
   } catch (error) {
     console.error('Logout error:', error)
   }
-  
+
   // Clear local storage
   localStorage.removeItem('auth_token')
   localStorage.removeItem('auth_user')
   localStorage.removeItem('auth_session_id')
+}
+
+export async function registerUser(email, username, password) {
+  const res = await fetch(`${AUTH_API_BASE}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, username, password }),
+  })
+  return res.json()
+}
+
+export async function loginUser(email, password) {
+  const res = await fetch(`${AUTH_API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  return res.json()
+}
+
+export async function createChatSession() {
+  const res = await apiCall('/chat/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+  return res?.json()
 }
 
 export function isAuthenticated() {
@@ -293,9 +311,6 @@ export async function upgradeToPremium() {
 }
 
 export default { 
-  registerUser,
-  loginUser,
-  createChatSession,
   uploadFile, rewriteClause, startChat, explainTerm,
   analyzeClause, translateToPlain, getHistoricalContext, exportReport, 
   generateDiff, redactDocument, processPrivacy, getJobStatus, getAllJobs, startJobPolling,
