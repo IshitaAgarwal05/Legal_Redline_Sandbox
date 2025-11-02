@@ -1,7 +1,14 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, DateTime, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
+from enum import Enum
+
+# User Role Enum
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    PREMIUM = "premium"
+    NORMAL = "normal"
 
 # User Model
 class User(Base):
@@ -11,10 +18,16 @@ class User(Base):
     username = Column(String(50), unique=True, index=True)
     email = Column(String(120), unique=True, index=True)
     password_hash = Column(String(255))
+    role = Column(SQLEnum(UserRole), default=UserRole.NORMAL)
+    document_count = Column(Integer, default=0)  # For normal users
+    query_count = Column(Integer, default=0)     # For normal users
+    last_reset_date = Column(DateTime, default=datetime.utcnow)
     last_active = Column(DateTime, default=datetime.utcnow)
-    
+    is_active = Column(Boolean, default=True)
+
     # Relationships
     # A User can have many ChatSessions and many ClauseRewrites
+    documents = relationship("Document", back_populates="user")
     chat_sessions = relationship("ChatSession", back_populates="user")
     rewrites = relationship("ClauseRewrite", back_populates="user")
 

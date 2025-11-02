@@ -280,6 +280,18 @@ export async function createChatSession() {
   return res?.json();
 }
 
+export async function upgradeToPremium() {
+  const response = await apiCall('/api/upgrade/premium', {
+    method: 'POST'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to initiate upgrade');
+  }
+  
+  return response.json();
+}
+
 export default { 
   registerUser,
   loginUser,

@@ -465,8 +465,12 @@ def get_saved_rewrites(
 async def upload_document(
     file: UploadFile = File(...), 
     force_ocr: bool = False,
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    # Check document limit for normal users
+    check_document_limit(current_user, db)
+    
     file_path = await save_upload_file(file)
     
     job_id = job_queue.create_job(
@@ -476,6 +480,9 @@ async def upload_document(
     )
     
     await job_queue.start_job(job_id, document_service.process_document_async)
+    
+    # Increment document count for normal users
+    increment_document_count(current_user, db)
     
     return {"job_id": job_id, "status": "processing"}
 

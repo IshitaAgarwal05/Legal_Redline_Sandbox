@@ -129,10 +129,6 @@ export default function App() {
     <div className="min-h-screen bg-gray-900">
       
       <Header handleLeaveSession={handleLeaveSession} />
-<<<<<<< HEAD
-
-=======
->>>>>>> ishita
 
       {/* This component is the "Toaster" */}
       <ToastContainer
