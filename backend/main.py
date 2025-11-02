@@ -48,6 +48,9 @@ from jose import JWTError, jwt
 
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
+from typing import List
 
 from . import models, database, schemas, security
 
@@ -68,6 +71,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# This tells FastAPI where the login endpoint is
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+
+#--------------------------------------------
+# 1. NEW: AUTHENTICATION ENDPOINTS
+#--------------------------------------------
+
+@app.post("/api/users/register", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """
+    Register a new user.
+    """
+    # Check if user already exists
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Hash the password
+    hashed_password = security.get_password_hash(user.password)
+    
+    # Create new user object
+    new_user = models.User(
+        username=user.username,
+        email=user.email,
+        password_hash=hashed_password,
+        last_active=datetime.utcnow()
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return new_user
 
 # Health endpoint
 @app.get("/health")
@@ -434,6 +474,7 @@ def get_saved_rewrites(
 
 
 # MODIFIED: All other job-creating endpoints
+from role_checker import check_document_limit, check_query_limit, increment_document_count, increment_query_count
 
 # Document processing endpoints
 @app.post("/api/upload")
