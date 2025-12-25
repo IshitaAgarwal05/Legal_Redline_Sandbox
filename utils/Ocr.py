@@ -406,9 +406,9 @@ def main():
                        help='Processing method: documentai (service account) or vision (API key)')
     parser.add_argument('--credentials', default='service.json', 
                        help='Path to service account JSON file (for documentai method)')
-    parser.add_argument('--api-key', default='AIzaSyCl7r3oputW_Cu0DMoNz2rxgXZ3QmDvO0E', 
+    parser.add_argument('--api-key', default='GEMINI_API_KEY', 
                        help='Google API key (for vision method)')
-    parser.add_argument('--processor-id', default='9e650faad3c59279', 
+    parser.add_argument('--processor-id', default='DOC_AI_API', 
                        help='Document AI processor ID (for documentai method)')
     parser.add_argument('--location', default='us', help='Google Cloud location')
     parser.add_argument('--output-dir', default='output', help='Directory to save output files')
