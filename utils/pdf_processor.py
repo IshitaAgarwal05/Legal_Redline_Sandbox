@@ -294,7 +294,7 @@ class PDFProcessor:
             raise Exception("Document AI credentials not configured")
         
         # Default processor ID if not set
-        processor_id = self.ocr_processor_id or '9e650faad3c59279'
+        processor_id = self.ocr_processor_id or 'DOC_API_KEY'
         
         # Initialize Document AI processor
         processor = DocumentOCRProcessor(
@@ -315,7 +315,7 @@ class PDFProcessor:
         
         if not self.ocr_api_key:
             # Use default API key
-            api_key = 'AIzaSyCl7r3oputW_Cu0DMoNz2rxgXZ3QmDvO0E'
+            api_key = 'GEMINI_API_KEY'
         else:
             api_key = self.ocr_api_key
         
