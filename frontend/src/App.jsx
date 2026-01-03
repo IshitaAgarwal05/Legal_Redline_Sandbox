@@ -10,8 +10,12 @@ import ChatbotPage from './pages/ChatbotPage'
 import ExportPage from './pages/ExportPage'
 import PrivacyPage from './pages/PrivacyPage'
 import DiffPage from './pages/DiffPage'
-import Footer from './components/Footer.jsx'
-import Header from './components/Header.jsx'
+import PricingPage from './pages/PricingPage'
+import PaymentPage from './pages/PaymentPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import Header from './components/Header'
+import Footer from './components/Footer'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import api from './api'
@@ -22,7 +26,7 @@ export default function App() {
   const navigate = useNavigate()
 
   // No loading state needed - session created on file upload
-  
+
   const handleLeaveSession = async () => {
     // Show confirmation dialog
     const confirmed = window.confirm(
@@ -48,10 +52,10 @@ export default function App() {
       }, 100)
     }
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-900">
-      
+
       <Header handleLeaveSession={handleLeaveSession} />
 
       {/* This component is the "Toaster" */}
@@ -67,7 +71,7 @@ export default function App() {
         pauseOnHover
         theme="dark"
       />
-      
+
       <main className="min-h-screen">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -79,6 +83,10 @@ export default function App() {
           <Route path="/export" element={<ExportPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/diff" element={<DiffPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </main>
 

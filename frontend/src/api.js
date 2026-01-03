@@ -11,25 +11,28 @@ async function apiCall(url, options = {}) {
 
   try {
     // Don't set Content-Type for FormData - let the browser set it with proper boundary
-    const headers = options.body instanceof FormData 
-      ? { ...options.headers }
-      : { 'Content-Type': 'application/json', ...options.headers };
+    const token = localStorage.getItem('access_token');
+    const headers = {
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...options.headers
+    };
 
     const response = await fetch(`${API_BASE}${url}`, {
       ...options,
       signal: controller.signal,
       headers
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       // If it fails, create an error object that our app can understand
       const errorData = await response.json().catch(() => ({}));
       const error = new Error(errorData.detail || `HTTP error! status: ${response.status}`);
-      
+
       // This part makes it behave like axios, so err.response.status works
-      error.response = { 
+      error.response = {
         status: response.status,
         data: errorData,
       };
@@ -56,10 +59,10 @@ export async function createChatSession() {
     body: JSON.stringify({}),
   })
   const data = await res.json()
-  
+
   // Store session ID in localStorage
   localStorage.setItem('sessionId', data.id)
-  
+
   return data
 }
 
@@ -169,7 +172,7 @@ export async function processPrivacy(documentContent, infoTypes, redactionLevel)
   const res = await apiCall('/api/privacy/redact', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
+    body: JSON.stringify({
       text: documentContent,
       info_types: infoTypes,
       redaction_level: redactionLevel
@@ -184,7 +187,7 @@ export function startJobPolling(jobId, onUpdate, interval = 2000) {
     try {
       const job = await getJobStatus(jobId)
       onUpdate(job)
-      
+
       if (job.status === 'completed' || job.status === 'failed') {
         clearInterval(pollInterval)
       }
@@ -193,16 +196,16 @@ export function startJobPolling(jobId, onUpdate, interval = 2000) {
       clearInterval(pollInterval)
     }
   }
-  
+
   const pollInterval = setInterval(poll, interval)
   poll() // Initial call
-  
+
   return () => clearInterval(pollInterval) // Return cleanup function
 }
 
-export default { 
+export default {
   uploadFile, rewriteClause, startChat, explainTerm,
-  analyzeClause, translateToPlain, getHistoricalContext, exportReport, 
+  analyzeClause, translateToPlain, getHistoricalContext, exportReport,
   generateDiff, redactDocument, processPrivacy, getJobStatus, getAllJobs, startJobPolling,
   createChatSession
 }

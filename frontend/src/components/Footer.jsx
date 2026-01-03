@@ -91,7 +91,7 @@ const Footer = () => {
           </div>
 
           {/* Contact */}
-          <div>
+          {/* <div>
             <h4 className="text-lg font-semibold mb-4 text-gray-100">Contact Us</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-gray-400">
@@ -111,7 +111,7 @@ const Footer = () => {
                 <span>+1 (555) 123-4567</span>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Bar */}

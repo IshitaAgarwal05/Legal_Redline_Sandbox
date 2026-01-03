@@ -13,6 +13,7 @@ const getInitialState = () => {
         sessionId: parsedState.sessionId || Math.random().toString(36).substr(2, 9),
         sessionStartTime: parsedState.sessionStartTime || new Date().toISOString(),
         resetFlag: 0, // Always reset this on page load
+        user: parsedState.user || null,
         chatSessionId: parsedState.chatSessionId || null,
         document: parsedState.document || null,
         riskyClauses: parsedState.riskyClauses || [],
@@ -26,12 +27,13 @@ const getInitialState = () => {
   } catch (error) {
     console.warn('Failed to load state from localStorage:', error)
   }
-  
+
   // Fallback to default initial state
   return {
     sessionId: Math.random().toString(36).substr(2, 9),
     sessionStartTime: new Date().toISOString(),
     resetFlag: 0,
+    user: null,
     chatSessionId: null,
     document: null,
     riskyClauses: [],
@@ -58,10 +60,16 @@ function reducer(state, action) {
           data: action.payload.data || null
         }]
       }
-    
+
+    case 'SET_USER':
+      return {
+        ...state,
+        user: action.payload
+      }
+
     case 'SET_DOCUMENT':
-      return { 
-        ...state, 
+      return {
+        ...state,
         document: action.payload,
         activities: [...state.activities, {
           id: Date.now(),
@@ -71,10 +79,10 @@ function reducer(state, action) {
           data: { filename: action.payload.filename, pages: action.payload.total_pages }
         }]
       }
-    
+
     case 'SET_RISKY':
-      return { 
-        ...state, 
+      return {
+        ...state,
         riskyClauses: action.payload,
         activities: [...state.activities, {
           id: Date.now(),
@@ -84,7 +92,7 @@ function reducer(state, action) {
           data: { count: action.payload.length }
         }]
       }
-    
+
     case 'ADD_REWRITE':
       // Ensure consistent data structure for rewrites
       const rewriteData = {
@@ -95,9 +103,9 @@ function reducer(state, action) {
         // Normalize the rewrite content field
         rewriteContent: action.payload?.rewritten_clause || action.payload?.rewrite || action.payload?.result?.rewritten_clause || action.payload?.result?.rewrite || action.payload
       }
-      
-      return { 
-        ...state, 
+
+      return {
+        ...state,
         rewriteHistory: { ...state.rewriteHistory, [action.clauseId]: rewriteData },
         activities: [...state.activities, {
           id: Date.now(),
@@ -107,7 +115,7 @@ function reducer(state, action) {
           data: { clauseId: action.clauseId }
         }]
       }
-    
+
     case 'ADD_CHAT_MESSAGE':
       return {
         ...state,
@@ -120,13 +128,13 @@ function reducer(state, action) {
           data: { messageType: action.payload.type }
         }]
       }
-    
+
     case 'ADD_JOB':
       return {
         ...state,
         activeJobs: { ...state.activeJobs, [action.payload.job_id]: action.payload }
       }
-    
+
     case 'UPDATE_JOB':
       const updatedJobs = { ...state.activeJobs }
       if (action.payload.status === 'completed' || action.payload.status === 'failed') {
@@ -134,18 +142,18 @@ function reducer(state, action) {
       } else {
         updatedJobs[action.payload.job_id] = action.payload
       }
-      
+
       const updatedResults = { ...state.jobResults }
       if (action.payload.status === 'completed') {
         updatedResults[action.payload.job_id] = action.payload.result
       }
-      
+
       return {
         ...state,
         activeJobs: updatedJobs,
         jobResults: updatedResults
       }
-    
+
     case 'SET_CHAT_SESSION':
       return {
         ...state,
@@ -158,7 +166,7 @@ function reducer(state, action) {
           data: { sessionId: action.payload }
         }]
       }
-    
+
     case 'RESET_SESSION':
       return {
         ...initialState,
@@ -173,7 +181,7 @@ function reducer(state, action) {
           data: { previousSessionId: state.sessionId }
         }]
       }
-    
+
     default:
       return state
   }
@@ -200,7 +208,7 @@ const clearAllStorage = () => {
   try {
     // Clear our specific key
     localStorage.removeItem(STORAGE_KEY)
-    
+
     // Also clear any other legal AI related keys that might exist
     const keys = Object.keys(localStorage)
     keys.forEach(key => {
@@ -208,7 +216,7 @@ const clearAllStorage = () => {
         localStorage.removeItem(key)
       }
     })
-    
+
     // Clear session storage as well
     sessionStorage.clear()
   } catch (error) {
@@ -218,17 +226,17 @@ const clearAllStorage = () => {
 
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  
+
   // Enhanced dispatch that also handles persistence
   const enhancedDispatch = (action) => {
     dispatch(action)
-    
+
     // For RESET_SESSION, clear storage completely
     if (action.type === 'RESET_SESSION') {
       clearAllStorage()
     }
   }
-  
+
   // Save state to localStorage whenever it changes
   useEffect(() => {
     // Don't save on the very first render or after reset
@@ -236,7 +244,7 @@ export function AppProvider({ children }) {
       saveStateToStorage(state)
     }
   }, [state])
-  
+
   // Log session start activity only once
   useEffect(() => {
     if (state.activities.length === 0 || !state.activities.some(a => a.type === 'session_started')) {
@@ -250,7 +258,7 @@ export function AppProvider({ children }) {
       })
     }
   }, [])
-  
+
   return <AppContext.Provider value={{ state, dispatch: enhancedDispatch }}>{children}</AppContext.Provider>
 }
 
